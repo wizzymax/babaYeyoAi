@@ -272,7 +272,17 @@ textarea::placeholder{color:var(--dim)}
   color:var(--muted);font-family:'JetBrains Mono',monospace;
 }
 .counter{color:var(--muted)}
+.chart-card{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:10px;padding:14px;margin:12px 0;
+}
+.chart-card .chart-title{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--accent);margin-bottom:12px;
+}
+.chart-card canvas{max-width:100%!important}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="signal-deco">
@@ -609,7 +619,22 @@ Doreen Charles Mushi: 189 tickets all resolved — perfect record
 Albert night shift: 1,128 outgoing calls — excellent outbound
 Payment is #1 issue: 3,593 tickets (41% of all)
 Arusha generates most tickets: 2,970 (34% of total)
-Repeat call rate 66% full period — major concern`;
+Repeat call rate 66% full period — major concern
+
+═══════════════════════════════
+CHART INSTRUCTIONS
+═══════════════════════════════
+When a user asks for a chart, graph, visual, or comparison that would benefit from a visual, output a JSON chart config block using this EXACT format on its own line:
+
+CHART_JSON:{"type":"bar","title":"Your Chart Title","labels":["Label1","Label2"],"datasets":[{"label":"Series Name","data":[10,20],"color":"#00b4d8"}]}
+
+Supported types: bar, line, doughnut, horizontalBar
+For multiple series use multiple objects in datasets array.
+Always use colors from: #00b4d8, #06d6a0, #ffd60a, #ef233c, #a78bfa, #f77f00
+Always include a CHART_JSON block when user asks for visual/chart/graph.
+You can include both text explanation AND a CHART_JSON block in the same response.
+Example for abandon rate trend:
+CHART_JSON:{"type":"line","title":"Abandon Rate Trend by Week","labels":["1 Mar","8 Mar","15 Mar","22 Mar","29 Mar","5 Apr"],"datasets":[{"label":"Abandon Rate %","data":[31,25,19,17,12,13],"color":"#ef233c"}]}`; 
 
 const history = [];
 
@@ -623,7 +648,7 @@ async function sendMsg() {
   const tid = addTyping();
   history.push({ role: 'user', content: msg });
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://YOUR-WORKER.YOUR-USERNAME.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -652,9 +677,85 @@ function addMsg(role, text) {
   const av = role === 'ai'
     ? '<div class="avatar ai">BY</div>'
     : '<div class="avatar user">You</div>';
-  div.innerHTML = `${av}<div class="bubble">${fmt(text)}</div>`;
+
+  // Extract chart JSON blocks before formatting
+  const chartMatches = [];
+  const cleanText = text.replace(/CHART_JSON:({[^\n]+})/g, (match, json) => {
+    chartMatches.push(json);
+    return '';
+  }).trim();
+
+  let bubbleContent = fmt(cleanText);
+
+  // Append chart containers
+  chartMatches.forEach((jsonStr, idx) => {
+    const chartId = 'chart-' + Date.now() + '-' + idx;
+    bubbleContent += `<div class="chart-card"><canvas id="${chartId}"></canvas></div>`;
+    setTimeout(() => renderChart(chartId, jsonStr), 80);
+  });
+
+  div.innerHTML = `${av}<div class="bubble">${bubbleContent}</div>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function renderChart(canvasId, jsonStr) {
+  try {
+    const cfg = JSON.parse(jsonStr);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    // Set title above canvas
+    const card = canvas.closest('.chart-card');
+    if (cfg.title && card) {
+      const t = document.createElement('div');
+      t.className = 'chart-title';
+      t.textContent = cfg.title;
+      card.insertBefore(t, canvas);
+    }
+
+    Chart.defaults.color = '#6b8cae';
+    Chart.defaults.borderColor = '#1e3050';
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.font.size = 11;
+
+    const isHBar = cfg.type === 'horizontalBar';
+    const chartType = isHBar ? 'bar' : cfg.type;
+
+    const datasets = cfg.datasets.map(d => ({
+      label: d.label,
+      data: d.data,
+      backgroundColor: d.color + (chartType === 'line' ? '22' : 'cc'),
+      borderColor: d.color,
+      borderWidth: chartType === 'line' ? 2.5 : 1,
+      borderRadius: chartType === 'bar' ? 4 : 0,
+      fill: chartType === 'line',
+      tension: 0.35,
+      pointBackgroundColor: d.color,
+      pointRadius: chartType === 'line' ? 4 : 0,
+    }));
+
+    new Chart(canvas, {
+      type: chartType,
+      data: { labels: cfg.labels, datasets },
+      options: {
+        indexAxis: isHBar ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: cfg.type === 'doughnut' ? true : false,
+        aspectRatio: cfg.type === 'doughnut' ? 1.8 : undefined,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 11, padding: 12 } },
+          tooltip: { backgroundColor: '#0c1420', borderColor: '#1e3050', borderWidth: 1 }
+        },
+        scales: cfg.type === 'doughnut' ? {} : {
+          x: { grid: { color: '#1e3050' } },
+          y: { grid: { color: '#1e3050' } }
+        }
+      }
+    });
+  } catch(e) {
+    console.warn('Chart render error:', e, jsonStr);
+  }
 }
 
 function fmt(t) {
