@@ -296,13 +296,14 @@ textarea::placeholder{color:var(--dim)}
       <svg viewBox="0 0 24 24"><path d="M1.5 8.5C5.5 4.5 10 2.5 12 2.5s6.5 2 10.5 6"/><path d="M5 12c1.9-2 4.3-3.5 7-3.5s5.1 1.5 7 3.5"/><path d="M8.5 15.5c1-1 2.2-1.5 3.5-1.5s2.5.5 3.5 1.5"/><circle cx="12" cy="19" r="1.5" fill="#fff" stroke="none"/></svg>
     </div>
     <div class="logo-text">
-      
+      <div class="co">Bonga Habari</div>
+      <div class="sub">ISP · Call Centre</div>
     </div>
   </div>
 
   <div class="hdr-title">
     <h1>Baba Yeyo — Habari Data Assistant</h1>
-    <p>Powered by Max · 1 March – 8 April 2026 data</p>
+    <p>Powered by AI · 1 March – 8 April 2026 data</p>
   </div>
 
   <div class="hdr-right">
@@ -648,7 +649,7 @@ async function sendMsg() {
   const tid = addTyping();
   history.push({ role: 'user', content: msg });
   try {
-    const res = await fetch('https://YOUR-WORKER.YOUR-USERNAME.workers.dev', {
+    const res = await fetch('http://localhost:8787', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
