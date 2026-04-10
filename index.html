@@ -649,7 +649,7 @@ async function sendMsg() {
   const tid = addTyping();
   history.push({ role: 'user', content: msg });
   try {
-    const res = await fetch('http://localhost:8787', {
+    const res = await fetch('https://wearing-moms-revised-contractors.trycloudflare.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
