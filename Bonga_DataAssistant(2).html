@@ -3,103 +3,383 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Habari Data Assistant — Baba Yeyo</title>
+<title>Baba Yeyo — Habari Data Assistant</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#070c14;
+  --panel:#0c1420;
+  --surface:#111d2e;
+  --surface2:#162236;
+  --border:#1e3050;
+  --border2:#243a5c;
+  --accent:#00b4d8;
+  --accent2:#0077b6;
+  --accent3:#023e8a;
+  --green:#06d6a0;
+  --amber:#ffd60a;
+  --red:#ef233c;
+  --text:#e8f1fb;
+  --muted:#6b8cae;
+  --dim:#2a3f58;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#0d1117;color:#e6edf3;height:100vh;display:flex;flex-direction:column}
-.hdr{background:#161b22;border-bottom:1px solid #2a3240;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.hdr-icon{width:38px;height:38px;background:linear-gradient(135deg,#1b3a6b,#0a6b6b);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.hdr-text h1{font-size:16px;font-weight:700}
-.hdr-text p{font-size:11px;color:#7d8da8;margin-top:1px}
-.status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:#7d8da8}
-.dot-live{width:7px;height:7px;border-radius:50%;background:#27c97a;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;position:relative}
 
-.suggestions{padding:10px 20px;background:#161b22;border-bottom:1px solid #2a3240;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
-.sug{background:#1e2530;border:1px solid #2a3240;border-radius:20px;padding:5px 12px;font-size:11.5px;color:#a0b8d0;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
-.sug:hover{background:#263040;border-color:#3b9eff;color:#3b9eff}
+/* ── GRID BACKGROUND ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,180,216,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,180,216,.04) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
 
-.chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
-.msg{display:flex;gap:10px;max-width:820px}
+/* ── SIGNAL RINGS DECORATION ── */
+.signal-deco{
+  position:fixed;top:-120px;right:-120px;z-index:0;pointer-events:none;
+  width:500px;height:500px;
+}
+.ring{
+  position:absolute;border-radius:50%;border:1px solid rgba(0,180,216,.08);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+}
+.ring:nth-child(1){width:200px;height:200px;border-color:rgba(0,180,216,.15)}
+.ring:nth-child(2){width:320px;height:320px;border-color:rgba(0,180,216,.09)}
+.ring:nth-child(3){width:450px;height:450px;border-color:rgba(0,180,216,.05)}
+
+/* ── HEADER ── */
+.hdr{
+  position:relative;z-index:10;
+  background:rgba(12,20,32,.95);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  display:flex;align-items:center;gap:0;
+  height:60px;flex-shrink:0;
+  backdrop-filter:blur(12px);
+}
+.hdr-logo{
+  display:flex;align-items:center;gap:12px;
+  padding-right:24px;
+  border-right:1px solid var(--border);
+}
+.logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.logo-icon::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15));
+}
+.logo-icon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.logo-text{line-height:1.2}
+.logo-text .co{font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--text)}
+.logo-text .sub{font-size:10px;color:var(--accent);font-weight:500;letter-spacing:.8px;text-transform:uppercase}
+
+.hdr-title{padding:0 20px;flex:1}
+.hdr-title h1{font-size:14px;font-weight:600;color:var(--text)}
+.hdr-title p{font-size:11px;color:var(--muted);margin-top:1px}
+
+.hdr-right{display:flex;align-items:center;gap:16px;margin-left:auto}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(6,214,160,.1);
+  border:1px solid rgba(6,214,160,.25);
+  border-radius:20px;padding:4px 12px;
+  font-size:11px;font-weight:500;color:var(--green);
+}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(6,214,160,.4)}50%{opacity:.7;box-shadow:0 0 0 4px transparent}}
+.data-badge{
+  font-size:10px;color:var(--muted);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:4px 10px;
+}
+.data-badge span{color:var(--accent);font-weight:600}
+
+/* ── QUICK QUESTIONS ── */
+.quick-bar{
+  position:relative;z-index:10;
+  background:rgba(11,19,30,.9);
+  border-bottom:1px solid var(--border);
+  padding:8px 24px;
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+  overflow-x:auto;scrollbar-width:none;
+}
+.quick-bar::-webkit-scrollbar{display:none}
+.quick-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;margin-right:4px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;padding:5px 12px;
+  font-size:11.5px;color:var(--muted);
+  cursor:pointer;white-space:nowrap;
+  transition:all .15s;flex-shrink:0;
+}
+.chip:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent)}
+.chip-icon{font-size:12px}
+
+/* ── CHAT AREA ── */
+.chat{
+  flex:1;overflow-y:auto;
+  padding:24px;
+  display:flex;flex-direction:column;gap:16px;
+  position:relative;z-index:5;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.chat::-webkit-scrollbar{width:4px}
+.chat::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ── MESSAGES ── */
+.msg{display:flex;gap:10px;max-width:860px;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
-.avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.avatar.ai{background:linear-gradient(135deg,#1b3a6b,#0a6b6b);font-size:11px;font-weight:700;color:#fff;letter-spacing:-.5px}
-.avatar.user{background:#263040;font-size:12px;font-weight:700;color:#3b9eff}
-.bubble{background:#1e2530;border:1px solid #2a3240;border-radius:12px;padding:12px 15px;font-size:13px;line-height:1.6;max-width:720px}
-.msg.user .bubble{background:#1b3a6b;border-color:#2a5a9b}
-.bubble table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
-.bubble th{background:#1b3a6b;color:#fff;padding:6px 8px;text-align:left;font-size:11px}
-.bubble td{padding:5px 8px;border-bottom:1px solid #2a3240}
-.bubble tr:nth-child(even) td{background:rgba(255,255,255,.03)}
-.bubble .good{color:#27c97a;font-weight:700}
-.bubble .bad{color:#f05c5c;font-weight:700}
-.bubble .warn{color:#f5b731;font-weight:700}
-.bubble strong{color:#e6edf3}
-.bubble code{background:#263040;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:#3b9eff}
-.typing{display:flex;gap:4px;align-items:center;padding:4px 0}
-.typing span{width:6px;height:6px;background:#3b9eff;border-radius:50%;animation:bounce .9s infinite}
-.typing span:nth-child(2){animation-delay:.15s}
-.typing span:nth-child(3){animation-delay:.3s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
 
-.input-area{background:#161b22;border-top:1px solid #2a3240;padding:14px 20px;flex-shrink:0}
+.avatar{
+  width:34px;height:34px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:11px;font-weight:700;
+}
+.avatar.ai{
+  background:linear-gradient(135deg,var(--accent3),var(--accent2));
+  color:var(--accent);letter-spacing:-.3px;
+  border:1px solid rgba(0,180,216,.3);
+}
+.avatar.user{
+  background:var(--surface2);color:var(--accent);
+  border:1px solid var(--border2);
+}
+
+.bubble{
+  border-radius:12px;padding:13px 16px;
+  font-size:13px;line-height:1.65;max-width:780px;
+  position:relative;
+}
+.msg.ai .bubble{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top-left-radius:3px;
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg,var(--accent3),var(--accent2));
+  border:1px solid rgba(0,119,182,.5);
+  border-top-right-radius:3px;
+  color:#fff;
+}
+
+/* ── BUBBLE CONTENT ── */
+.bubble table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;border-radius:8px;overflow:hidden}
+.bubble th{
+  background:var(--accent3);color:var(--accent);
+  padding:7px 10px;text-align:left;font-size:11px;font-weight:600;
+  letter-spacing:.3px;border-right:1px solid rgba(0,180,216,.15);
+}
+.bubble th:last-child{border-right:none}
+.bubble td{
+  padding:6px 10px;border-bottom:1px solid var(--border);
+  border-right:1px solid var(--border);color:var(--text);
+}
+.bubble td:last-child{border-right:none}
+.bubble tr:last-child td{border-bottom:none}
+.bubble tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.bubble .good{color:var(--green);font-weight:600}
+.bubble .bad{color:var(--red);font-weight:600}
+.bubble .warn{color:var(--amber);font-weight:600}
+.bubble strong{color:var(--accent);font-weight:600}
+.bubble code{
+  background:var(--surface2);border:1px solid var(--border);
+  padding:1px 6px;border-radius:4px;
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--accent);
+}
+.msg.user .bubble strong{color:#fff}
+.msg.user .bubble code{background:rgba(0,0,0,.2);border-color:rgba(255,255,255,.2);color:#fff}
+
+/* ── TYPING INDICATOR ── */
+.typing-wrap{display:flex;gap:10px;animation:fadeIn .2s ease}
+.typing-bubble{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;border-top-left-radius:3px;
+  padding:14px 18px;display:flex;align-items:center;gap:5px;
+}
+.typing-bubble span{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  animation:bounce 1s infinite;
+}
+.typing-bubble span:nth-child(2){animation-delay:.15s;background:var(--accent2)}
+.typing-bubble span:nth-child(3){animation-delay:.3s;background:var(--accent3)}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-7px)}}
+
+/* ── WELCOME ── */
+.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.w-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;cursor:pointer;
+  transition:all .15s;
+}
+.w-card:hover{border-color:var(--accent);background:rgba(0,180,216,.06)}
+.w-card .wc-icon{font-size:16px;margin-bottom:4px}
+.w-card .wc-title{font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:2px}
+.w-card .wc-desc{font-size:10.5px;color:var(--muted)}
+
+/* ── INPUT AREA ── */
+.input-wrap{
+  position:relative;z-index:10;
+  background:rgba(12,20,32,.97);
+  border-top:1px solid var(--border);
+  padding:14px 24px 16px;flex-shrink:0;
+  backdrop-filter:blur(12px);
+}
 .input-row{display:flex;gap:10px;align-items:flex-end}
-textarea{flex:1;background:#1e2530;border:1px solid #2a3240;border-radius:10px;padding:10px 14px;color:#e6edf3;font-family:Arial,sans-serif;font-size:13px;resize:none;outline:none;min-height:44px;max-height:120px;line-height:1.5}
-textarea:focus{border-color:#3b9eff}
-textarea::placeholder{color:#4a5568}
-button.send{width:44px;height:44px;background:#1b3a6b;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:background .15s}
-button.send:hover{background:#2a5a9b}
-button.send:disabled{background:#263040;cursor:not-allowed;opacity:.5}
-.hint{font-size:10.5px;color:#4a5568;margin-top:6px;text-align:center}
+.input-box{
+  flex:1;position:relative;
+}
+textarea{
+  width:100%;background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:10px;padding:11px 16px;
+  color:var(--text);
+  font-family:'Inter',sans-serif;font-size:13px;
+  resize:none;outline:none;min-height:46px;max-height:130px;
+  line-height:1.5;transition:border-color .2s;
+}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--dim)}
+.send-btn{
+  width:46px;height:46px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:opacity .15s,transform .1s;
+}
+.send-btn:hover{opacity:.9}
+.send-btn:active{transform:scale(.96)}
+.send-btn:disabled{background:var(--surface2);cursor:not-allowed;opacity:.5}
+.send-btn svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.input-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:7px;font-size:10.5px;color:var(--dim);
+}
+.input-footer .hint{display:flex;align-items:center;gap:4px}
+.kbd{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:4px;padding:1px 5px;font-size:10px;
+  color:var(--muted);font-family:'JetBrains Mono',monospace;
+}
+.counter{color:var(--muted)}
+.chart-card{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:10px;padding:14px;margin:12px 0;
+}
+.chart-card .chart-title{
+  font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--accent);margin-bottom:12px;
+}
+.chart-card canvas{max-width:100%!important}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
+<div class="signal-deco">
+  <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+</div>
 
-<div class="hdr">
-  <div class="hdr-icon">📞</div>
-  <div class="hdr-text">
-    <h1>Habari Data Assistant</h1>
-    <p>Ask anything about calls, tickets, agents & performance</p>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M1.5 8.5C5.5 4.5 10 2.5 12 2.5s6.5 2 10.5 6"/><path d="M5 12c1.9-2 4.3-3.5 7-3.5s5.1 1.5 7 3.5"/><path d="M8.5 15.5c1-1 2.2-1.5 3.5-1.5s2.5.5 3.5 1.5"/><circle cx="12" cy="19" r="1.5" fill="#fff" stroke="none"/></svg>
+    </div>
+    <div class="logo-text">
+      <div class="co">Bonga Habari</div>
+      <div class="sub">ISP · Call Centre</div>
+    </div>
   </div>
-  <div class="status"><div class="dot-live"></div>Live</div>
+
+  <div class="hdr-title">
+    <h1>Baba Yeyo — Habari Data Assistant</h1>
+    <p>Powered by AI · 1 March – 8 April 2026 data</p>
+  </div>
+
+  <div class="hdr-right">
+    <div class="data-badge">Data range: <span>1 Mar – 8 Apr 2026</span></div>
+    <div class="status-pill"><div class="pulse"></div>Online</div>
+  </div>
+</header>
+
+<!-- QUICK QUESTIONS -->
+<div class="quick-bar">
+  <span class="quick-label">Quick ask:</span>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">📞</span>Daily calls 24 March</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🏆</span>Best agent full period</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">📉</span>Highest abandon rate day</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🎫</span>Top ticket categories</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">⚡</span>Worst SLA sub-category</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">📊</span>Agatha vs Glory comparison</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🔄</span>Repeat call trend</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🌍</span>Tickets by region</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🔝</span>Who improved most?</div>
+  <div class="chip" onclick="ask(this.textContent)"><span class="chip-icon">🚨</span>Unresolved tickets summary</div>
 </div>
 
-<div class="suggestions" id="sugs">
-  <div class="sug" onclick="ask(this.textContent)">Daily calls for 24 March</div>
-  <div class="sug" onclick="ask(this.textContent)">Best performing agent overall</div>
-  <div class="sug" onclick="ask(this.textContent)">Which day had highest abandon rate?</div>
-  <div class="sug" onclick="ask(this.textContent)">Ticket categories with most issues</div>
-  <div class="sug" onclick="ask(this.textContent)">Agatha vs Glory comparison</div>
-  <div class="sug" onclick="ask(this.textContent)">March to April full trend</div>
-  <div class="sug" onclick="ask(this.textContent)">SLA performance full period</div>
-  <div class="sug" onclick="ask(this.textContent)">Who improved most between periods?</div>
-</div>
-
+<!-- CHAT -->
 <div class="chat" id="chat">
-  <div class="msg">
-    <div class="avatar ai">🤖</div>
+  <div class="msg ai">
+    <div class="avatar ai">BY</div>
     <div class="bubble">
-      Mambo! I'm <strong>Baba Yeyo</strong> 👋 — your Habari data assistant. I have full call centre data from <strong>1 March to 8 April 2026</strong>. You can ask me anything about:<br><br>
-      • <strong>Daily call stats</strong> — volume, abandon rate, answered, dropped<br>
-      • <strong>Agent performance</strong> — any agent, any period<br>
-      • <strong>Ticket data</strong> — categories, regions, SLA, FCR<br>
-      • <strong>Period comparisons</strong> — trends and changes over time<br>
-      • <strong>Team analysis</strong> — who's improving, who needs attention<br><br>
-      Just type your question below or click one of the suggestions above.
+      <strong>Mambo! Mimi ni Baba Yeyo</strong> 👋 — your Habari Call Centre data assistant.<br><br>
+      I have complete data from <strong>1 March to 8 April 2026</strong> — that's 16,585 calls, 8,766 tickets, and every agent's full performance record. Ask me anything:<br><br>
+      <div class="welcome-grid">
+        <div class="w-card" onclick="ask('Give me the full call summary for March 2026')">
+          <div class="wc-icon">📞</div>
+          <div class="wc-title">Call Statistics</div>
+          <div class="wc-desc">Daily volumes, abandon rate, repeat calls</div>
+        </div>
+        <div class="w-card" onclick="ask('Show me all agent performance for the full period')">
+          <div class="wc-icon">👥</div>
+          <div class="wc-title">Agent Performance</div>
+          <div class="wc-desc">Calls, tickets, FCR, conversion rates</div>
+        </div>
+        <div class="w-card" onclick="ask('Summarise the ticket data including SLA performance')">
+          <div class="wc-icon">🎫</div>
+          <div class="wc-title">Ticket Analysis</div>
+          <div class="wc-desc">Categories, SLA, regions, open tickets</div>
+        </div>
+        <div class="w-card" onclick="ask('Compare period 22-29 March vs 28 March to 6 April')">
+          <div class="wc-icon">📈</div>
+          <div class="wc-title">Period Comparison</div>
+          <div class="wc-desc">Trends and changes across periods</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="input-area">
+<!-- INPUT -->
+<div class="input-wrap">
   <div class="input-row">
-    <textarea id="inp" placeholder="Ask about any date, agent, ticket category..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
-    <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
+    <div class="input-box">
+      <textarea id="inp" placeholder="Ask Baba Yeyo anything — e.g. 'How many calls dropped on 2 April?' or 'Who had the best FCR rate?'" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"
+        oninput="autoResize(this);updateCounter(this)"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
   </div>
-  <div class="hint">Press Enter to send · Shift+Enter for new line</div>
+  <div class="input-footer">
+    <div class="hint"><span class="kbd">Enter</span> to send &nbsp;·&nbsp; <span class="kbd">Shift+Enter</span> for new line</div>
+    <div class="counter" id="counter">0 / 500</div>
+  </div>
 </div>
 
 <script>
-const SYSTEM = `You are Baba Yeyo, the Habari Data Assistant for Bonga Habari Call Centre. You have complete performance data from 1 March to 8 April 2026. Answer questions clearly and directly. Format with tables where helpful. Use ✅ for good, ❌ for poor, ⚠️ for near-target. Be concise but complete. Always refer to yourself as Baba Yeyo when asked who you are.
+const SYSTEM = `You are Baba Yeyo, the Habari Data Assistant for Bonga Habari Call Centre — an ISP company in Tanzania. You have complete call centre performance data from 1 March to 8 April 2026. Answer questions clearly and directly. Format with tables where helpful. Use ✅ for good, ❌ for poor, ⚠️ for near-target. Be concise but complete. Always introduce yourself as Baba Yeyo when asked. Speak in a professional but warm tone. You can understand both English and Swahili questions.
 
 ═══════════════════════════════
 FULL PERIOD OVERVIEW (1 MAR – 8 APR 2026)
@@ -132,7 +412,7 @@ TOP REPEAT CALLERS (full period):
 +628235795     | 30 calls
 
 ═══════════════════════════════
-DAILY CALL DATA (1 MAR – 27 MAR 2026)
+DAILY CALL DATA (selected dates)
 ═══════════════════════════════
 Date       | Total | Repeat%
 1 Mar Mon  | 581   | 43%
@@ -155,328 +435,238 @@ Date       | Total | Repeat%
 18 Mar Thu | 483   | 39%
 19 Mar Fri | 232   | 46%
 20 Mar Sat | 488   | 41%
-21 Mar Sun | (low) | 36%
 22 Mar Sun | 139   | 36%
-23 Mar Mon | 582   | 39%
+23 Mar Mon | 582   | 45%
 24 Mar Tue | 483   | 39%
-25 Mar Wed | 232   | 42%
-26 Mar Thu | 488   | 40%
-27 Mar Fri | 514   | 36%
+25 Mar Wed | 232   | 33%
+26 Mar Thu | 488   | 42%
+27 Mar Fri | 514   | 37%
+28 Mar Sat | 369   | 40%
+29 Mar Sun | 310   | (low)
+30 Mar Mon | 481   | 44%
+31 Mar Tue | 389   | 34%
+1 Apr Wed  | 430   | 34%
+2 Apr Thu  | 440   | 41%
+3 Apr Fri  | 352   | 38%
+4 Apr Sat  | 344   | 45%
+5 Apr Sun  | 218   | 38%
+6 Apr Mon  | 34    | 21%
 
-DAILY CALL DATA (28 MAR – 6 APR 2026):
-Date       | Total | Answered | Dropped | Abandon% | Repeat%
-28 Mar Sat | 369   | 290      | 79      | 21%      | 40%
-29 Mar Sun | 310   | 281      | 29      | 9%       | —
-30 Mar Mon | 481   | 428      | 53      | 11%      | 44%
-31 Mar Tue | 389   | 348      | 41      | 11%      | 34%
-1 Apr Wed  | 430   | 371      | 59      | 14%      | 34%
-2 Apr Thu  | 440   | 378      | 62      | 14%      | 41%
-3 Apr Fri  | 352   | 314      | 38      | 11%      | 38%
-4 Apr Sat  | 344   | 306      | 38      | 11%      | 45%
-5 Apr Sun  | 218   | 201      | 17      | 8%       | 38%
-6 Apr Mon  | 34    | 28       | 4       | 12%      | 21%
+PERIOD TOTALS:
+22–29 Mar: 3,117 calls | 2,607 answered | 502 dropped | 16% avg abandon | 52% repeat | 1,506 distinct
+28 Mar–6 Apr: 3,367 calls | 2,945 answered | 420 dropped | 12% avg abandon | 54% repeat | 1,553 distinct
 
 ═══════════════════════════════
 WEEKLY KPI SNAPSHOTS
 ═══════════════════════════════
-KPI                 | 14 Mar | 21 Mar | 24 Mar | 26 Mar | 27 Mar
-Total Inbound       | 468    | 300    | 550    | 488    | 514
-Calls Answered      | 411    | 281    | 349    | 402    | 438
-Call Abandon Rate   | 12.18% | 6.33%  | 36%    | 17%    | 15%
-Distinct Customers  | 301    | 208    | 327    | 284    | 205
-Repeat Calls %      | 35.68% | 30.67% | 41%    | 42%    | 29%
-Tickets Raised      | 257    | 145    | 261    | 249    | 188
-FCR Tickets         | 100    | 63     | 85     | 84     | 52
-% FCR               | 38.91% | 43.45% | 32.6%  | 33.7%  | 27.7%
-
-PERIOD TOTALS:
-Period 22–29 Mar: 3,117 calls | 2,607 answered | 502 dropped | 16% avg abandon | 52% repeat | 1,506 distinct
-Period 28 Mar–6 Apr: 3,367 calls | 2,945 answered | 420 dropped | 12% avg abandon | 54% repeat | 1,553 distinct
+KPI                | 14 Mar | 21 Mar | 24 Mar | 26 Mar | 27 Mar
+Total Inbound      | 468    | 300    | 550    | 488    | 514
+Answered           | 411    | 281    | 349    | 402    | 438
+Abandon Rate       | 12.18% | 6.33%  | 36%    | 17%    | 15%
+Distinct Customers | 301    | 208    | 327    | 284    | 205
+Repeat Calls %     | 35.68% | 30.67% | 41%    | 42%    | 29%
+Tickets Raised     | 257    | 145    | 261    | 249    | 188
+FCR Tickets        | 100    | 63     | 85     | 84     | 52
+% FCR              | 38.91% | 43.45% | 32.6%  | 33.7%  | 27.7%
 
 ═══════════════════════════════
-AGENT PERFORMANCE — FULL PERIOD (1 MAR – 8 APR 2026)
+AGENT PERFORMANCE — FULL PERIOD (1 MAR – 8 APR)
 ═══════════════════════════════
-Agent          | Inbound | Outgoing | Tickets | FCR   | Conv% | FCR%  | Shift
-Agatha         | 2,524   | 204      | 1,849   | 1,052 | 73%   | 57%   | Day
-Vengei         | 2,351   | 278      | 1,041   | 423   | 44%   | 41%   | Day
-Glory          | 2,342   | 121      | 1,059   | 468   | 45%   | 44%   | Day
-Philip         | 1,435   | 251      | 642     | 211   | 45%   | 33%   | Night
-Mamiro         | 1,400   | 335      | 636     | 205   | 45%   | 32%   | Day
-Nayla          | 1,150   | 230      | 703     | 292   | 61%   | 41%   | Day
-Enos           | 542     | 1,027    | 420     | 140   | 77%   | 33%   | Day
-Irene          | 436     | 572      | 212     | 15    | 49%   | 7%    | Day (CST Intern)
-James          | 245     | 503      | 192     | 42    | 78%   | 22%   | Day
-Max            | 237     | 1,397    | 29      | 1     | —     | —     | Outbound
-Albert         | 112     | 1,128    | 8       | —     | —     | —     | Night
-Prosister      | 80      | 181      | 133     | 34    | 166%* | 26%   | Day
-Innocent-NOC   | 64      | 16       | 10      | —     | —     | —     | NOC
-Babra          | 26      | 88       | 26      | 10    | 100%  | 38%   | Day
-Dativaa        | 148     | 29       | —       | —     | —     | —     | Day
-TOTAL          | 13,163  | 12,747   | 8,766   | 2,977 | —     | 34.0% | —
+Agent      | Inbound | Outgoing | Tickets | FCR   | Conv% | FCR%  | Shift
+Agatha     | 2,524   | 204      | 1,849   | 1,052 | 73%   | 57%   | Day
+Vengei     | 2,351   | 278      | 1,041   | 423   | 44%   | 41%   | Day
+Glory      | 2,342   | 121      | 1,059   | 468   | 45%   | 44%   | Day
+Philip     | 1,435   | 251      | 642     | 211   | 45%   | 33%   | Night
+Mamiro     | 1,400   | 335      | 636     | 205   | 45%   | 32%   | Day
+Nayla      | 1,150   | 230      | 703     | 292   | 61%   | 41%   | Day
+Enos       | 542     | 1,027    | 420     | 140   | 77%   | 33%   | Day
+Irene      | 436     | 572      | 212     | 15    | 49%   | 7%    | Day/CST Intern
+James      | 245     | 503      | 192     | 42    | 78%   | 22%   | Day
+Max        | 237     | 1,397    | 29      | 1     | —     | —     | Outbound
+Albert     | 112     | 1,128    | 8       | —     | —     | —     | Night
+Prosister  | 80      | 181      | 133     | 34    | 166%* | 26%   | Day
+Innocent   | 64      | 16       | 10      | —     | —     | —     | NOC
+Babra      | 26      | 88       | 26      | 10    | 100%  | 38%   | Day
+Dativaa    | 148     | 29       | —       | —     | —     | —     | Day
+TOTAL      | 13,163  | 12,747   | 8,766   | 2,977 | —     | 34.0% | —
+
+AGENT PERFORMANCE — PERIOD 1 (22–29 MAR):
+Agent    | Inbound | Tickets | FCR | Conv%
+Glory    | 504     | 324     | 142 | 64%
+Agatha   | 499     | 516     | 302 | 103%
+Nayla    | 356     | 309     | 122 | 87%
+Philip   | 280     | 119     | 31  | 43% (night)
+Vengei   | 258     | 60      | 23  | 23%
+Mamiro   | 214     | 66      | 26  | 31%
+Irene    | 181     | 76      | 4   | 42%
+Enos     | 140     | 83      | 24  | 59%
+James    | 92      | 48      | 14  | 52%
+TOTAL    | 2,615   | 2,030   | 706 | FCR 34.8%
+
+AGENT PERFORMANCE — PERIOD 2 (28 MAR–6 APR):
+Agent    | Inbound | Tickets | FCR | Conv%
+Mamiro   | 544     | 178     | 66  | 33%
+Vengei   | 493     | 324     | 164 | 66%
+Glory    | 458     | 227     | 135 | 50%
+Agatha   | 440     | 432     | 308 | 98%
+Nayla    | 329     | 279     | 138 | 85%
+Philip   | 262     | 106     | 27  | 40% (night)
+Enos     | 180     | 113     | 67  | 63%
+Irene    | 107     | 87      | 5   | 81%
+James    | 64      | 36      | 16  | 56%
+TOTAL    | 2,947   | 2,150   | 938 | FCR 43.6%
+
+SPECIFIC DATE DATA — 24 MARCH 2026:
+Total: 550 calls | 349 answered | 199 dropped | 36% abandon | 41% repeat | 327 distinct
+Agents: Glory 74 calls 40 tickets 54% | Nayla 73 calls 41 tickets 56% | Agatha 72 calls 53 tickets 74% | Enos 45 calls 22 tickets 49% | Irene 45 calls 14 tickets 31% | James 14 calls 15 tickets 107%
+
+SPECIFIC DATE DATA — 26 MARCH 2026:
+Total: 488 calls | 402 answered | 85 dropped | 17% abandon | 42% repeat | 284 distinct
+Agents: Glory 80 calls 52 tickets 65% | Nayla 76 calls 53 tickets 70% | Vengei 74 calls (tickets missing) | Mamiro 57 calls 7 tickets 12% | Irene 37 calls 17 tickets 46% | Enos 31 calls 22 tickets 71% | Philip 25 calls 17 tickets 68% | James 12 calls 5 tickets 42%
+
+SPECIFIC DATE DATA — 27 MARCH 2026:
+Total: 288 calls | 257 answered | 29 dropped | 10% abandon | 29% repeat | 205 distinct
+Agents: Mamiro 63 calls 15 tickets 24% | Glory 50 calls 40 tickets 80% | Irene 34 calls 20 tickets 59% | Nayla 34 calls 25 tickets 74% | Agatha 25 calls 36 tickets 144% | James 22 calls 8 tickets 36%
 
 ═══════════════════════════════
-AGENT PERFORMANCE — PERIOD 1 (22–29 MARCH)
+TICKET SUMMARY — FULL PERIOD (1 MAR – 8 APR)
 ═══════════════════════════════
-Agent    | Inbound | Outgoing | Tickets | FCR | Conv% | FCR%  | Shift
-Glory    | 504     | 20       | 324     | 142 | 64%   | 44%   | Day
-Agatha   | 499     | 54       | 516     | 302 | 103%  | 58%   | Day
-Nayla    | 356     | 116      | 309     | 122 | 87%   | 39%   | Day
-Philip   | 280     | 56       | 119     | 31  | 43%   | 26%   | Night
-Vengei   | 258     | 10       | 60      | 23  | 23%   | 38%   | Day
-Mamiro   | 214     | 24       | 66      | 26  | 31%   | 39%   | Day
-Irene    | 181     | 87       | 76      | 4   | 42%   | 5%    | Day
-Enos     | 140     | 102      | 83      | 24  | 59%   | 29%   | Day
-James    | 92      | 100      | 48      | 14  | 52%   | 29%   | Day
-Albert   | 22      | 199      | 3       | 0   | —     | —     | Night
-Babra    | 13      | 47       | 12      | 3   | 92%   | 25%   | Day
-TOTAL    | 2,615   | 3,007    | 2,030   | 706 | —     | 34.8% | —
+Total tickets: 8,766 | Resolved: 8,369 (95.5%) | Unresolved: 397 | Repeat: 2,611 (29.79%)
+SLA: 74% within | 26% past | 29.9hrs avg resolution
+
+TICKETS BY CREATOR:
+Agatha Tobia Ernest | 1,849 | 1,826 resolved | 23 open
+Glory Eliud Michael | 1,059 | 978 resolved   | 81 open ⚠️
+Glory Vengei        | 1,041 | 1,017 resolved  | 24 open
+Nayla Hamis         | 703   | 677 resolved    | 26 open
+Olais Philipo Mollel| 642   | 620 resolved    | 22 open
+Rosemary Mamiro     | 636   | 631 resolved    | 5 open
+Enos Mussa          | 420   | 405 resolved    | 15 open
+Zubeda Hamza        | 321   | 312 resolved    | 9 open
+Cst intern (Irene)  | 212   | 197 resolved    | 15 open
+James Kaaya         | 192   | 185 resolved    | 7 open
+Doreen Charles Mushi| 189   | 189 resolved    | 0 open ✅
+Total               | 8,766 | 8,369           | 397
+
+UNRESOLVED: 279 beyond SLA | 118 within SLA
+CRITICAL: Glory Eliud Michael = 59 beyond SLA + 15 within = 74 total unresolved
+
+TICKETS BY CATEGORY:
+Payment           | 3,593 | 1,209 repeat (34%)
+No Internet       | 2,553 | 822 repeat (32%)
+Slow Internet     | 957   | 239 repeat (25%)
+Service request   | 839   | 290 repeat (35%)
+Churn             | 202   | 0 repeat
+On & Off conn     | 197   | 12 repeat
+Recovery          | 111   | 19 repeat
+Refund            | 100   | 9 repeat
+Retention         | 65    | 0 repeat
+Technical         | 61    | 6 repeat
+TOTAL             | 8,766 | 2,611 repeat (29.79%)
+
+TICKETS BY REGION:
+Arusha    | 2,970 (33.9%)
+Moshi     | 1,358 (15.5%)
+Mwanza    | 1,218 (13.9%)
+Dodoma    | 1,181 (13.5%)
+Other     | 821  (9.4%)
+Shinyanga | 431  (4.9%)
+Morogoro  | 305  (3.5%)
+
+SLA BY SUB-CATEGORY:
+Payment confirmation         | 2,789 | 96% within | 4% past  | 6hrs
+System Fault                 | 700   | 79% within | 21% past | 25hrs
+Faulty equipment             | 699   | 75% within | 25% past | 25hrs
+Network Downtime             | 609   | 58% within | 42% past | 38hrs
+Password Change              | 601   | 84% within | 16% past | 18hrs
+Fiber cut/LOS Red            | 333   | 49% within | 51% past | 40hrs
+Signal Optimization          | 312   | 42% within | 58% past | 63hrs ❌
+LAN Issue                    | 104   | 36% within | 64% past | 62hrs ❌
+Refunded                     | 97    | 51% within | 49% past | 71hrs
+Recovered                    | 70    | 44% within | 56% past | 85hrs
+Mobile Money Payment         | 164   | 98% within | 2% past  | 2hrs ✅
+Credit Note                  | 159   | 97% within | 3% past  | 5hrs ✅
+OVERALL                      | 8,532 | 74% within | 26% past | 30hrs
+
+DEPT AVG HANDLING TIME:
+Customer Success              | 17hrs
+Enterprise Delivery/Retention | 61hrs
+Finance                       | 7hrs
+Implementation & Operations   | 64hrs
+IT                            | 19hrs
+Network Planning & NOC        | 8hrs
+Sales & Marketing             | 104hrs ❌
+TOTAL AVG                     | 27hrs
+
+WORST OPEN TICKETS:
+Ticket 38807 — 1,841hrs (Poor signal, Wireless)
+Ticket 42381 — 1,829hrs
+Ticket 44635 — 1,152hrs
+Ticket 45101 — 1,122hrs
 
 ═══════════════════════════════
-AGENT PERFORMANCE — PERIOD 2 (28 MAR–6 APR)
-═══════════════════════════════
-Agent    | Inbound | Outgoing | Tickets | FCR | Conv% | FCR%  | Shift
-Mamiro   | 544     | 96       | 178     | 66  | 33%   | 37%   | Day
-Vengei   | 493     | 20       | 324     | 164 | 66%   | 51%   | Day
-Glory    | 458     | 26       | 227     | 135 | 50%   | 59%   | Day
-Agatha   | 440     | 54       | 432     | 308 | 98%   | 71%   | Day
-Nayla    | 329     | 76       | 279     | 138 | 85%   | 49%   | Day
-Philip   | 262     | 43       | 106     | 27  | 40%   | 25%   | Night
-Enos     | 180     | 118      | 113     | 67  | 63%   | 59%   | Day
-Irene    | 107     | 118      | 87      | 5   | 81%   | 6%    | Day
-James    | 64      | 36       | 36      | 16  | 56%   | 44%   | Day
-Albert   | 28      | 194      | 4       | 0   | —     | —     | Night
-Babra    | 13      | 44       | 8       | 2   | 62%   | 25%   | Day
-TOTAL    | 2,947   | 2,315    | 2,150   | 938 | —     | 43.6% | —
-
-═══════════════════════════════
-SPECIFIC DATE AGENT DATA
-═══════════════════════════════
-24 MARCH 2026:
-Agent    | Inbound | Outgoing | Tickets | FCR | Conv%
-Glory    | 74      | 3        | 40      | 20  | 54%
-Nayla    | 73      | 27       | 41      | 13  | 56%
-Agatha   | 72      | 7        | 53      | 38  | 74%
-Enos     | 45      | 26       | 22      | 5   | 49%
-Irene    | 45      | 12       | 14      | 1   | 31%
-James    | 14      | 30       | 15      | 4   | 107%
-Total    | 368     | 528      | 261     | 85  | FCR 32.6%
-
-26 MARCH 2026:
-Agent    | Inbound | Outgoing | Tickets | FCR | Conv%
-Glory    | 80      | 4        | 52      | 19  | 65%
-Nayla    | 76      | 25       | 53      | 24  | 70%
-Vengei   | 74      | —        | —       | —   | —
-Mamiro   | 57      | 8        | 7       | —   | 12%
-Irene    | 37      | 31       | 17      | 1   | 46%
-Enos     | 31      | 27       | 22      | 13  | 71%
-Philip   | 25      | 7        | 17      | 5   | 68%
-James    | 12      | 24       | 5       | 2   | 42%
-Total    | 402     | 606      | 249     | 84  | FCR 33.7%
-
-27 MARCH 2026:
-Agent    | Inbound | Outgoing | Tickets | FCR | Conv%
-Mamiro   | 63      | 8        | 15      | 7   | 24%
-Glory    | 50      | 3        | 40      | 16  | 80%
-Irene    | 34      | 5        | 20      | 1   | 59%
-Nayla    | 34      | 21       | 25      | 10  | 74%
-Agatha   | 25      | 4        | 36      | 18  | 144%
-James    | 22      | 12       | 8       | 0   | 36%
-Total    | 259     | 367      | 188     | 52  | FCR 27.7%
-
-═══════════════════════════════
-TICKET SUMMARY — FULL PERIOD (1 MAR – 8 APR 2026)
-═══════════════════════════════
-Total tickets: 8,766
-Resolved: 8,369 (95.5%)
-Unresolved: 397
-Repeat tickets: 2,611 (29.79%)
-Overall SLA: 74% within SLA | 26% past SLA | 29.9hrs avg resolution
-
-TICKETS BY CREATOR (full period):
-Creator                  | Total | Resolved | Unresolved
-Agatha Tobia Ernest      | 1,849 | 1,826    | 23
-Glory Eliud Michael      | 1,059 | 978      | 81
-Glory Vengei             | 1,041 | 1,017    | 24
-Nayla Hamis              | 703   | 677      | 26
-Olais Philipo Mollel     | 642   | 620      | 22
-Rosemary Mamiro          | 636   | 631      | 5
-Enos Mussa               | 420   | 405      | 15
-Zubeda Hamza             | 321   | 312      | 9
-Cst intern (Irene)       | 212   | 197      | 15
-Application              | 194   | 176      | 18
-James Kaaya              | 192   | 185      | 7
-Doreen Charles Mushi     | 189   | 189      | 0
-Roza Shayo               | 150   | 148      | 2
-Prosista Andrew          | 133   | 128      | 5
-Abubakar Mguku           | 124   | 121      | 3
-Agnes Thomas Somme       | 90    | 89       | 1
-Eldard Edward Moyo       | 73    | 52       | 21
-Faraja Nashon            | 50    | 43       | 7
-Scholastica Charles John | 49    | 42       | 7
-Winnifrida J. Thomas     | 47    | 31       | 16
-TOTAL                    | 8,766 | 8,369    | 397
-
-UNRESOLVED TICKETS (397 total | 279 beyond SLA | 118 within SLA):
-Glory Eliud Michael  | 59 beyond SLA | 15 within SLA = 74 total ⚠️ CRITICAL
-Enos Mussa           | 7 beyond SLA  | 8 within SLA  = 15 total
-Cst intern (Irene)   | 6 beyond SLA  | 2 within SLA  = 8 total
-Zubeda Hamza         | 5 beyond SLA  | 10 within SLA = 15 total
-Eldard Edward Moyo   | —             | —             = 21 total
-Winnifrida J. Thomas | —             | —             = 16 total
-Nayla Hamis          | 1 beyond SLA  | 8 within SLA  = 9 total
-Agnes Thomas Somme   | 3 beyond SLA  = 3 total
-Olais Philipo Mollel | 4 beyond SLA  = 4 total
-Babra Mboya          | 4 beyond SLA  = 4 total
-Cs Intern            | 5 beyond SLA  | 1 within SLA  = 6 total
-
-═══════════════════════════════
-TICKETS BY CATEGORY (1 MAR – 8 APR)
-═══════════════════════════════
-Category          | Tickets | Repeat Tickets | Repeat%
-Payment           | 3,593   | 1,209          | 34%
-No Internet       | 2,553   | 822            | 32%
-Slow Internet     | 957     | 239            | 25%
-Service request   | 839     | 290            | 35%
-Churn             | 202     | 0              | 0%
-On & Off conn     | 197     | 12             | 6%
-Recovery          | 111     | 19             | 17%
-Refund            | 100     | 9              | 9%
-Retention         | 65      | 0              | 0%
-Technical         | 61      | 6              | 10%
-Hosting Issues    | 33      | 5              | 15%
-Onboarding        | 31      | 0              | 0%
-Software          | 9       | 0              | 0%
-Migration         | 7       | 0              | 0%
-General enquiries | 5       | 0              | 0%
-Finance           | 2       | 0              | 0%
-Requisition       | 1       | 0              | 0%
-TOTAL             | 8,766   | 2,611          | 29.79%
-
-═══════════════════════════════
-TICKETS BY REGION (1 MAR – 8 APR)
-═══════════════════════════════
-Region    | Tickets | % of Total
-Arusha    | 2,970   | 33.9%
-Moshi     | 1,358   | 15.5%
-Mwanza    | 1,218   | 13.9%
-Dodoma    | 1,181   | 13.5%
-Other     | 821     | 9.4%
-Shinyanga | 431     | 4.9%
-Morogoro  | 305     | 3.5%
-TOTAL     | 8,766   | —
-
-═══════════════════════════════
-SLA PERFORMANCE BY SUB-CATEGORY (1 MAR – 8 APR)
-═══════════════════════════════
-Sub Category                   | Tickets | Within SLA | Past SLA | Avg Hrs
-Payment confirmation           | 2,789   | 96%        | 4%       | 6
-System Fault                   | 700     | 79%        | 21%      | 25
-Faulty equipment               | 699     | 75%        | 25%      | 25
-Network Downtime               | 609     | 58%        | 42%      | 38
-Password Change                | 601     | 84%        | 16%      | 18
-Fiber cut/LOS Red              | 333     | 49%        | 51%      | 40
-Signal Optimization            | 312     | 42%        | 58%      | 63
-Invoice/Proforma/Receipts      | 241     | 75%        | 25%      | 21
-High usage                     | 213     | 62%        | 38%      | 39
-(unnamed)                      | 171     | 0%         | 100%     | 120
-Mobile Money Payment Issues    | 164     | 98%        | 2%       | 2
-Credit Note                    | 159     | 97%        | 3%       | 5
-Power Issue                    | 120     | 66%        | 34%      | 32
-LAN Issue                      | 104     | 36%        | 64%      | 62
-Refunded                       | 97      | 51%        | 49%      | 71
-Cable unplugged                | 78      | 64%        | 36%      | 29
-Amount to Pay                  | 71      | 77%        | 23%      | 19
-Recovered                      | 70      | 44%        | 56%      | 85
-System reconnection/Disconn.   | 52      | 90%        | 10%      | 12
-OVERALL                        | 8,532   | 74%        | 26%      | 30
-
-AVG TICKET HANDLING TIME BY DEPARTMENT:
-Customer Success               | 17 hrs
-Enterprise Delivery/Retention  | 61 hrs
-Finance                        | 7 hrs
-Implementation & Operations    | 64 hrs
-IT                             | 19 hrs
-Network Planning & NOC         | 8 hrs
-Sales & Marketing              | 104 hrs
-TOTAL AVG                      | 27 hrs
-
-═══════════════════════════════
-WORST PERFORMING TICKET (LONGEST OPEN):
-Ticket 38807 — 1,841 hrs (Poor signal, Wireless)
-Ticket 42381 — 1,829 hrs
-Ticket 44635 — 1,152 hrs
-Ticket 45101 — 1,122 hrs
-Ticket 44959 — 1,104 hrs
-═══════════════════════════════
-
-TOP REPEAT CUSTOMERS (full period):
-Customer 1014021438 | 35 tickets | 32 repeat
-Customer 1014024180 | 29 tickets | 25 repeat
-Customer 1014017739 | 27 tickets | 24 repeat
-Customer 1014019555 | 16 tickets | 14 repeat
-
-═══════════════════════════════
-TARGETS
+TARGETS & CONTEXT
 ═══════════════════════════════
 Calls per agent per day: 90
-Ticket conversion: 68%
-Abandon rate: ≤10%
+Ticket conversion target: 68%
+Abandon rate target: ≤10%
 FCR target: 40%+
-Night shift agents: Philip and Albert
-Irene's tickets are logged as CST Intern in the system
-Vengei had ticket attribution issues early — improved later
+Philip and Albert = night shift agents
+Irene's tickets logged as CST Intern in system
+Agatha is top performer all periods
+Vengei biggest improvement: 23% → 66% conversion
+Glory Eliud Michael has critical unresolved backlog (74 tickets)
+Doreen Charles Mushi: 189 tickets all resolved — perfect record
+Albert night shift: 1,128 outgoing calls — excellent outbound
+Payment is #1 issue: 3,593 tickets (41% of all)
+Arusha generates most tickets: 2,970 (34% of total)
+Repeat call rate 66% full period — major concern
 
 ═══════════════════════════════
-KEY INSIGHTS
+CHART INSTRUCTIONS
 ═══════════════════════════════
-- Agatha is the best performer: 2,524 calls, 1,849 tickets, 73% conversion, 57% FCR over full period
-- Full period abandon rate averaged 21% but improved week by week from 31% to 13%
-- Repeat call rate is 66% over full period — extremely high, driven by unresolved issues
-- Payment issues are the #1 problem: 3,593 tickets (41% of all tickets), 1,209 repeat tickets
-- Arusha generates the most tickets: 2,970 (34% of total)
-- Signal Optimization: 58% past SLA, 63hrs avg — worst sub-category
-- LAN Issue: 64% past SLA, 62hrs avg — second worst
-- Glory Eliud Michael has 74 unresolved tickets — 59 already beyond SLA — critical
-- Sales & Marketing department averages 104hrs per ticket — highest in company
-- Implementation & Operations: 64hrs avg — second highest
-- The 10% abandon target was hit on 29 Mar (9%) and 5 Apr (8%)
-- Irene FCR rate is only 7% despite decent conversion — tickets not being fully resolved
-- Mamiro has high call volume but low conversion consistently (31–45% across periods)
-- Vengei improved dramatically: 23% conversion in Period 1 → 66% in Period 2
-- Doreen Charles Mushi: 189 tickets, all 189 resolved — 0 unresolved (perfect record)
-- Albert (night): 1,128 outgoing over full period — excellent outbound productivity`
+When a user asks for a chart, graph, visual, or comparison that would benefit from a visual, output a JSON chart config block using this EXACT format on its own line:
+
+CHART_JSON:{"type":"bar","title":"Your Chart Title","labels":["Label1","Label2"],"datasets":[{"label":"Series Name","data":[10,20],"color":"#00b4d8"}]}
+
+Supported types: bar, line, doughnut, horizontalBar
+For multiple series use multiple objects in datasets array.
+Always use colors from: #00b4d8, #06d6a0, #ffd60a, #ef233c, #a78bfa, #f77f00
+Always include a CHART_JSON block when user asks for visual/chart/graph.
+You can include both text explanation AND a CHART_JSON block in the same response.
+Example for abandon rate trend:
+CHART_JSON:{"type":"line","title":"Abandon Rate Trend by Week","labels":["1 Mar","8 Mar","15 Mar","22 Mar","29 Mar","5 Apr"],"datasets":[{"label":"Abandon Rate %","data":[31,25,19,17,12,13],"color":"#ef233c"}]}`; 
 
 const history = [];
 
 async function sendMsg() {
   const inp = document.getElementById('inp');
   const msg = inp.value.trim();
-  if (!msg) return;
-  inp.value = '';
-  inp.style.height = 'auto';
+  if (!msg || document.getElementById('sendBtn').disabled) return;
+  inp.value = ''; autoResize(inp); updateCounter(inp);
   addMsg('user', msg);
   document.getElementById('sendBtn').disabled = true;
-  const typingId = addTyping();
+  const tid = addTyping();
   history.push({ role: 'user', content: msg });
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://celebrate-spell-compete-firefox.trycloudflare.com', {:8787', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
+        max_tokens: 1500,
         system: SYSTEM,
         messages: history
       })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text || 'Sorry, I could not get a response.';
-    removeTyping(typingId);
+    const reply = data.content?.[0]?.text || 'Samahani, I could not get a response. Please try again.';
+    removeTyping(tid);
     addMsg('ai', reply);
     history.push({ role: 'assistant', content: reply });
   } catch(e) {
-    removeTyping(typingId);
-    addMsg('ai', '⚠️ Connection error. Please try again.');
+    removeTyping(tid);
+    addMsg('ai', '⚠️ Connection error. Please check your internet and try again.');
   }
   document.getElementById('sendBtn').disabled = false;
 }
@@ -485,74 +675,134 @@ function addMsg(role, text) {
   const chat = document.getElementById('chat');
   const div = document.createElement('div');
   div.className = `msg ${role}`;
-  const avatar = role === 'ai'
-    ? '<div class="avatar ai">🤖</div>'
+  const av = role === 'ai'
+    ? '<div class="avatar ai">BY</div>'
     : '<div class="avatar user">You</div>';
-  div.innerHTML = `${avatar}<div class="bubble">${formatText(text)}</div>`;
+
+  // Extract chart JSON blocks before formatting
+  const chartMatches = [];
+  const cleanText = text.replace(/CHART_JSON:({[^\n]+})/g, (match, json) => {
+    chartMatches.push(json);
+    return '';
+  }).trim();
+
+  let bubbleContent = fmt(cleanText);
+
+  // Append chart containers
+  chartMatches.forEach((jsonStr, idx) => {
+    const chartId = 'chart-' + Date.now() + '-' + idx;
+    bubbleContent += `<div class="chart-card"><canvas id="${chartId}"></canvas></div>`;
+    setTimeout(() => renderChart(chartId, jsonStr), 80);
+  });
+
+  div.innerHTML = `${av}<div class="bubble">${bubbleContent}</div>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-function formatText(t) {
+function renderChart(canvasId, jsonStr) {
+  try {
+    const cfg = JSON.parse(jsonStr);
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    // Set title above canvas
+    const card = canvas.closest('.chart-card');
+    if (cfg.title && card) {
+      const t = document.createElement('div');
+      t.className = 'chart-title';
+      t.textContent = cfg.title;
+      card.insertBefore(t, canvas);
+    }
+
+    Chart.defaults.color = '#6b8cae';
+    Chart.defaults.borderColor = '#1e3050';
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.font.size = 11;
+
+    const isHBar = cfg.type === 'horizontalBar';
+    const chartType = isHBar ? 'bar' : cfg.type;
+
+    const datasets = cfg.datasets.map(d => ({
+      label: d.label,
+      data: d.data,
+      backgroundColor: d.color + (chartType === 'line' ? '22' : 'cc'),
+      borderColor: d.color,
+      borderWidth: chartType === 'line' ? 2.5 : 1,
+      borderRadius: chartType === 'bar' ? 4 : 0,
+      fill: chartType === 'line',
+      tension: 0.35,
+      pointBackgroundColor: d.color,
+      pointRadius: chartType === 'line' ? 4 : 0,
+    }));
+
+    new Chart(canvas, {
+      type: chartType,
+      data: { labels: cfg.labels, datasets },
+      options: {
+        indexAxis: isHBar ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: cfg.type === 'doughnut' ? true : false,
+        aspectRatio: cfg.type === 'doughnut' ? 1.8 : undefined,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 11, padding: 12 } },
+          tooltip: { backgroundColor: '#0c1420', borderColor: '#1e3050', borderWidth: 1 }
+        },
+        scales: cfg.type === 'doughnut' ? {} : {
+          x: { grid: { color: '#1e3050' } },
+          y: { grid: { color: '#1e3050' } }
+        }
+      }
+    });
+  } catch(e) {
+    console.warn('Chart render error:', e, jsonStr);
+  }
+}
+
+function fmt(t) {
   t = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   t = t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  t = t.replace(/`(.+?)`/g,'<code>$1</code>');
+  t = t.replace(/`([^`]+)`/g,'<code>$1</code>');
   t = t.replace(/✅/g,'<span class="good">✅</span>');
   t = t.replace(/❌/g,'<span class="bad">❌</span>');
   t = t.replace(/⚠️/g,'<span class="warn">⚠️</span>');
-  // Tables
   const lines = t.split('\n');
-  let out = '', inTable = false, tableLines = [];
-  for (const line of lines) {
-    if (line.trim().startsWith('|')) {
-      inTable = true;
-      tableLines.push(line);
-    } else {
-      if (inTable) { out += buildTable(tableLines); tableLines = []; inTable = false; }
-      out += line + '\n';
-    }
+  let out = '', inT = false, tl = [];
+  for (const l of lines) {
+    if (l.trim().startsWith('|')) { inT = true; tl.push(l); }
+    else { if (inT) { out += mkTable(tl); tl = []; inT = false; } out += l + '\n'; }
   }
-  if (inTable) out += buildTable(tableLines);
-  t = out;
-  t = t.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
+  if (inT) out += mkTable(tl);
+  t = out.replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
   return '<p>' + t + '</p>';
 }
 
-function buildTable(lines) {
+function mkTable(lines) {
   const rows = lines.filter(l => !l.match(/^\|[-| :]+\|$/));
-  if (rows.length === 0) return '';
-  let html = '<table>';
-  rows.forEach((row, i) => {
-    const cells = row.split('|').filter((_, j, a) => j > 0 && j < a.length - 1);
+  if (!rows.length) return '';
+  let h = '<table>';
+  rows.forEach((r, i) => {
+    const cells = r.split('|').filter((_, j, a) => j > 0 && j < a.length - 1);
     const tag = i === 0 ? 'th' : 'td';
-    html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    h += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
   });
-  return html + '</table>';
+  return h + '</table>';
 }
 
-let typingCount = 0;
+let tc = 0;
 function addTyping() {
-  const id = 'typing-' + (++typingCount);
+  const id = 'ty-' + (++tc);
   const chat = document.getElementById('chat');
-  const div = document.createElement('div');
-  div.className = 'msg'; div.id = id;
-  div.innerHTML = '<div class="avatar ai">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  const d = document.createElement('div');
+  d.id = id; d.className = 'typing-wrap';
+  d.innerHTML = '<div class="avatar ai">BY</div><div class="typing-bubble"><span></span><span></span><span></span></div>';
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
   return id;
 }
-function removeTyping(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-function ask(q) {
-  document.getElementById('inp').value = q;
-  sendMsg();
-}
-document.getElementById('inp').addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
+function removeTyping(id) { const el = document.getElementById(id); if(el) el.remove(); }
+function ask(q) { document.getElementById('inp').value = q; sendMsg(); }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 130) + 'px'; }
+function updateCounter(el) { document.getElementById('counter').textContent = el.value.length + ' / 500'; }
 </script>
 </body>
 </html>
